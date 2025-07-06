@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sender - Gửi File Âm Thanh</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            background: #f8f9fa;
+        }
+
+        .section h3 {
+            color: #495057;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .file-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .file-label {
+            flex: 1;
+            min-width: 200px;
+            padding: 15px;
+            border: 2px dashed #dee2e6;
+            border-radius: 8px;
+            text-align: center;
+            background: white;
+            color: #6c757d;
+            transition: all 0.3s ease;
+        }
+
+        .file-label:hover {
+            border-color: #007bff;
+            color: #007bff;
+        }
+
+        .connection-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .ip-section {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+
+        .ip-input {
+            padding: 10px 15px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 1em;
+            width: 200px;
+        }
+
+        .ip-input:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        .ip-info {
+            background: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 8px;
+            padding: 10px 15px;
+            color: #0056b3;
+            font-weight: 600;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 15px;
+            border-radius: 8px;
+            background: white;
+            border: 2px solid #dee2e6;
+        }
+
+        .status-icon {
+            font-size: 1.5em;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,123,255,0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #28a745, #1e7e34);
+            color: white;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40,167,69,0.4);
+        }
+
+        .btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .log-container {
+            height: 400px;
+            overflow-y: auto;
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            line-height: 1.4;
+        }
+
+        .log-entry {
+            margin-bottom: 5px;
+            word-wrap: break-word;
+        }
+
+        .alert-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            animation: slideIn 0.3s ease;
+        }
+
+        .alert-success {
+            background: linear-gradient(135deg, #28a745, #1e7e34);
+        }
+
+        .alert-error {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="alert-container" id="alertContainer"></div>
+    
+    <div class="container">
+        <div class="header">
+            <h1>🎵 Sender</h1>
+            <p>Gửi file âm thanh an toàn với mã hóa</p>
+        </div>
+        
+        <div class="content">
+            <!-- IP Configuration Section -->
+            <div class="section">
+                <h3>🌐 Cấu Hình Kết Nối</h3>
+                <div class="ip-section">
+                    <label for="receiverIp">Địa chỉ IP Receiver:</label>
+                    <input type="text" id="receiverIp" class="ip-input" placeholder="192.168.1.100" value="localhost">
+                    <button class="btn btn-primary" onclick="setReceiverIp()">Thiết Lập IP</button>
+                </div>
+                <div class="ip-info" id="ipInfo">
+                    📍 IP Local của bạn: <span id="localIp">Đang tải...</span>
+                </div>
+            </div>
+
+            <!-- File Selection Section -->
+            <div class="section">
+                <h3>📁 Chọn File Âm Thanh</h3>
+                <div class="file-section">
+                    <div class="file-label" id="fileLabel">
+                        <span id="fileText">Chưa chọn file</span>
+                    </div>
+                    <input type="file" id="fileInput" accept="audio/*" class="hidden">
+                    <button class="btn btn-primary" onclick="document.getElementById('fileInput').click()">
+                        Chọn File
+                    </button>
+                </div>
+            </div>
+
+            <!-- Connection Section -->
+            <div class="section">
+                <h3>🔗 Kết Nối</h3>
+                <div class="connection-section">
+                    <button class="btn btn-primary" id="connectBtn" onclick="connect()">
+                        Bắt Đầu Kết Nối
+                    </button>
+                    <button class="btn btn-primary" id="helloBtn" onclick="sendHello()" disabled>
+                        Gửi Hello!
+                    </button>
+                    <div class="status-indicator">
+                        <span class="status-icon" id="statusIcon">🔴</span>
+                        <span id="statusText">Chưa kết nối</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Send Section -->
+            <div class="section">
+                <h3>📤 Gửi File</h3>
+                <button class="btn btn-success" id="sendBtn" onclick="sendFile()" disabled>
+                    Gửi File
+                </button>
+            </div>
+
+            <!-- Log Section -->
+            <div class="section">
+                <h3>📋 Nhật Ký Hoạt Động</h3>
+                <div class="log-container" id="logContainer">
+                    <div class="log-entry">🚀 Khởi động ứng dụng...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedFile = null;
+        let isConnected = false;
+        let receiverIp = "localhost";
+
+        const fileInput = document.getElementById('fileInput');
+        const fileText = document.getElementById('fileText');
+        const fileLabel = document.getElementById('fileLabel');
+        const connectBtn = document.getElementById('connectBtn');
+        const sendBtn = document.getElementById('sendBtn');
+        const statusIcon = document.getElementById('statusIcon');
+        const statusText = document.getElementById('statusText');
+        const logContainer = document.getElementById('logContainer');
+        const alertContainer = document.getElementById('alertContainer');
+        const receiverIpInput = document.getElementById('receiverIp');
+        const localIpSpan = document.getElementById('localIp');
+        const helloBtn = document.getElementById('helloBtn');
+
+        // Load local IP khi trang tải
+        window.addEventListener('load', async () => {
+            try {
+                const response = await fetch('/get_local_ip');
+                const data = await response.json();
+                localIpSpan.textContent = data.local_ip;
+            } catch (error) {
+                localIpSpan.textContent = 'Không thể tải IP';
+            }
+        });
+
+        async function setReceiverIp() {
+            const ip = receiverIpInput.value.trim();
+            if (!ip) {
+                showAlert('Vui lòng nhập địa chỉ IP!', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/set_receiver_ip', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ ip: ip })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    receiverIp = ip;
+                    showAlert(data.message, 'success');
+                    updateLogs(data.logs);
+                } else {
+                    showAlert(data.error, 'error');
+                }
+            } catch (error) {
+                showAlert('Lỗi khi thiết lập IP: ' + error.message, 'error');
+            }
+        }
+
+        fileInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch('/select_file', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    selectedFile = data.filename;
+                    fileText.textContent = `📁 ${data.filename}`;
+                    fileLabel.style.background = '#d4edda';
+                    fileLabel.style.borderColor = '#28a745';
+                    fileLabel.style.color = '#155724';
+                    updateSendButton();
+                    updateLogs(data.logs);
+                    showAlert('File đã được chọn thành công!', 'success');
+                } else {
+                    showAlert(data.error, 'error');
+                }
+            } catch (error) {
+                showAlert('Lỗi khi chọn file: ' + error.message, 'error');
+            }
+        });
+
+        async function connect() {
+            connectBtn.disabled = true;
+            updateConnectionStatus('connecting');
+
+            try {
+                const response = await fetch('/connect', {
+                    method: 'POST'
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    isConnected = true;
+                    updateConnectionStatus('connected');
+                    updateSendButton();
+                    helloBtn.disabled = false;
+                    showAlert('Kết nối thành công!', 'success');
+                } else {
+                    updateConnectionStatus('disconnected');
+                    helloBtn.disabled = true;
+                    showAlert('Lỗi kết nối: ' + data.error, 'error');
+                }
+                updateLogs(data.logs);
+            } catch (error) {
+                updateConnectionStatus('disconnected');
+                helloBtn.disabled = true;
+                showAlert('Lỗi kết nối: ' + error.message, 'error');
+            } finally {
+                connectBtn.disabled = false;
+            }
+        }
+
+        async function sendHello() {
+            helloBtn.disabled = true;
+            try {
+                const response = await fetch('/send_hello', {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                if (data.success) {
+                    showAlert('Người nhận đã sẵn sàng nhận file!', 'success');
+                    statusText.textContent = 'Đã kết nối với người nhận (sẵn sàng gửi file)';
+                    statusIcon.textContent = '🟢';
+                    sendBtn.disabled = false;
+                } else {
+                    showAlert('Lỗi gửi Hello: ' + data.error, 'error');
+                    sendBtn.disabled = true;
+                }
+                updateLogs(data.logs);
+            } catch (error) {
+                showAlert('Lỗi gửi Hello: ' + error.message, 'error');
+                sendBtn.disabled = true;
+            } finally {
+                helloBtn.disabled = false;
+            }
+        }
+
+        async function sendFile() {
+            if (!selectedFile || !isConnected) {
+                showAlert('Vui lòng chọn file và kết nối trước khi gửi!', 'error');
+                return;
+            }
+
+            sendBtn.disabled = true;
+            connectBtn.disabled = true;
+
+            try {
+                const response = await fetch('/send_file', {
+                    method: 'POST'
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    showAlert(data.message, 'success');
+                    isConnected = false;
+                    updateConnectionStatus('disconnected');
+                } else {
+                    showAlert(data.error, 'error');
+                }
+                updateLogs(data.logs);
+            } catch (error) {
+                showAlert('Lỗi khi gửi file: ' + error.message, 'error');
+            } finally {
+                sendBtn.disabled = false;
+                connectBtn.disabled = false;
+                updateSendButton();
+            }
+        }
+
+        function updateConnectionStatus(status) {
+            if (status === 'connected') {
+                statusIcon.textContent = '🟢';
+                statusText.textContent = 'Đã kết nối';
+            } else if (status === 'connecting') {
+                statusIcon.textContent = '🟡';
+                statusText.textContent = 'Đang kết nối...';
+            } else {
+                statusIcon.textContent = '🔴';
+                statusText.textContent = 'Chưa kết nối';
+            }
+        }
+
+        function updateSendButton() {
+            sendBtn.disabled = !(selectedFile && isConnected && data && data.receiver_ready);
+        }
+
+        function updateLogs(logs) {
+            if (!logs) return;
+            logContainer.innerHTML = '';
+            logs.forEach(log => {
+                const logEntry = document.createElement('div');
+                logEntry.className = 'log-entry';
+                logEntry.textContent = log;
+                logContainer.appendChild(logEntry);
+            });
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        function showAlert(message, type) {
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            alertContainer.appendChild(alert);
+
+            setTimeout(() => {
+                alert.remove();
+            }, 5000);
+        }
+
+        // Auto refresh status
+        setInterval(async () => {
+            try {
+                const response = await fetch('/get_status');
+                const data = await response.json();
+                
+                if (data.selected_file && !selectedFile) {
+                    selectedFile = data.selected_file;
+                    fileText.textContent = `📁 ${data.selected_file}`;
+                    fileLabel.style.background = '#d4edda';
+                    fileLabel.style.borderColor = '#28a745';
+                    fileLabel.style.color = '#155724';
+                }
+                
+                if (data.is_connected !== isConnected) {
+                    isConnected = data.is_connected;
+                    updateConnectionStatus(isConnected ? 'connected' : 'disconnected');
+                    updateSendButton();
+                    helloBtn.disabled = !isConnected;
+                }
+                
+                // Hiển thị trạng thái khi người nhận đã sẵn sàng
+                if (data.receiver_ready) {
+                    statusText.textContent = 'Đã kết nối với người nhận (sẵn sàng gửi file)';
+                    statusIcon.textContent = '🟢';
+                    sendBtn.disabled = false;
+                } else {
+                    sendBtn.disabled = true;
+                }
+
+                updateLogs(data.logs);
+            } catch (error) {
+                console.error('Lỗi cập nhật trạng thái:', error);
+            }
+        }, 2000);
+    </script>
+</body>
+</html> 
